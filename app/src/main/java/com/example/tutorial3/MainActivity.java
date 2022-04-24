@@ -7,6 +7,7 @@ import androidx.core.content.ContextCompat;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.View;
@@ -21,6 +22,7 @@ import java.io.IOException;
 import com.opencsv.CSVWriter;
 
 import java.util.ArrayList;
+import java.util.Random;
 
 import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.data.Entry;
@@ -30,15 +32,14 @@ import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
 
 public class MainActivity extends AppCompatActivity {
     LineChart mpLineChart;
+    Random r = new Random();
     int counter = 1;
     int val = 40;
+    float val2 = 42;
     private Handler mHandlar = new Handler();  //Handlar is used for delay definition in the loop
-
-
 
     public MainActivity() throws FileNotFoundException {
     }
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,51 +55,48 @@ public class MainActivity extends AppCompatActivity {
         }
 
 
-
-
-
         mpLineChart = (LineChart) findViewById(R.id.line_chart);
-        LineDataSet lineDataSet1 =  new LineDataSet(dataValues1(), "Data Set 1");
 
+        LineDataSet lineDataSet1 =  new LineDataSet(dataValues1(), "Data Set 1");
+        LineDataSet lineDataSet2 =  new LineDataSet(dataValues2(), "Data Set 2");
         ArrayList<ILineDataSet> dataSets = new ArrayList<>();
         dataSets.add(lineDataSet1);
+        dataSets.add(lineDataSet2);
         LineData data = new LineData(dataSets);
         mpLineChart.setData(data);
         mpLineChart.invalidate();
-
+        lineDataSet1.setColor(Color.RED);
+        lineDataSet1.setCircleColor(Color.RED);
+        lineDataSet2.setColor(Color.GREEN);
+        lineDataSet2.setCircleColor(Color.GREEN);
         Button buttonClear = (Button) findViewById(R.id.button1);
         Button buttonCsvShow = (Button) findViewById(R.id.button2);
-
         buttonCsvShow.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 OpenLoadCSV();
-
             }
         });
 
-
-
-
-
         LineDataSet finalLineDataSet = lineDataSet1;
+        LineDataSet finalLineDataSet2 = lineDataSet2;
 
         Runnable DataUpdate = new Runnable(){
             @Override
             public void run() {
-
                 data.addEntry(new Entry(counter,val),0);
+                data.addEntry(new Entry(counter,val2),1);
                 finalLineDataSet.notifyDataSetChanged(); // let the data know a dataSet changed
+                finalLineDataSet2.notifyDataSetChanged();
                 mpLineChart.notifyDataSetChanged(); // let the chart know it's data changed
                 mpLineChart.invalidate(); // refresh
                 val = (int) (Math.random() * 80);
+                val2 = (float) (r.nextGaussian() *10 + 40 );
 
                 saveToCsv("/sdcard/csv_dir/",String.valueOf(counter),String.valueOf(val));
-
+                saveToCsv("/sdcard/csv_dir2/",String.valueOf(counter),String.valueOf(val2));
                 counter += 1;
                 mHandlar.postDelayed(this,500);
-
-
             }
         };
 
@@ -106,20 +104,19 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 Toast.makeText(getApplicationContext(),"Clear",Toast.LENGTH_SHORT).show();
                 LineData data = mpLineChart.getData();
+                data.clearValues();
                 ILineDataSet set = data.getDataSetByIndex(0);
-                data.getDataSetByIndex(0);
                 while(set.removeLast()){}
-                val=40;
                 counter = 1;
+//                ILineDataSet set2 = data.getDataSetByIndex(1);
+//                while(set2.removeLast()){}
+                val=40;
+                val2=0;
 
             }
         });
-
-        
         mHandlar.postDelayed(DataUpdate,500);
     }
-
-
 
     private ArrayList<Entry> dataValues1()
     {
@@ -128,6 +125,12 @@ public class MainActivity extends AppCompatActivity {
         return dataVals;
     }
 
+    private ArrayList<Entry> dataValues2()
+    {
+        ArrayList<Entry> dataVals = new ArrayList<Entry>();
+        dataVals.add(new Entry(0,0));
+        return dataVals;
+    }
     private void saveToCsv(String path,String str1, String str2){
         try{
             File file = new File(path);
@@ -139,14 +142,11 @@ public class MainActivity extends AppCompatActivity {
             csvWriter.close();
         } catch (IOException e) {
             Toast.makeText(MainActivity.this,"ERROR",Toast.LENGTH_LONG).show();
-
             e.printStackTrace();
         }
     }
-   private void OpenLoadCSV(){
-     Intent intent = new Intent(this,LoadCSV.class);
-     startActivity(intent);
-   }
-
-
+    private void OpenLoadCSV(){
+        Intent intent = new Intent(this,LoadCSV.class);
+        startActivity(intent);
+    }
 }
