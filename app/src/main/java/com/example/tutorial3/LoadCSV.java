@@ -30,18 +30,11 @@ public class LoadCSV extends AppCompatActivity {
         LineChart lineChart = (LineChart) findViewById(R.id.line_chart);
 
         ArrayList<String[]> csvData = new ArrayList<>();
-        ArrayList<String[]> csvData2 = new ArrayList<>();
 
         csvData= CsvRead("/sdcard/csv_dir/data.csv");
-        csvData2= CsvRead("/sdcard/csv_dir2/data.csv");
-
-        LineDataSet lineDataSet1 =  new LineDataSet(DataValues1(csvData),"Data Set 1");
-        LineDataSet lineDataSet2 =  new LineDataSet(DataValues2(csvData2),"Data Set 2");
-
+        LineDataSet lineDataSet1 =  new LineDataSet(DataValues(csvData),"Data Set 1");
         ArrayList<ILineDataSet> dataSets = new ArrayList<>();
-
         dataSets.add(lineDataSet1);
-        dataSets.add(lineDataSet2);
         LineData data = new LineData(dataSets);
         lineChart.setData(data);
         lineChart.invalidate();
@@ -79,7 +72,7 @@ public class LoadCSV extends AppCompatActivity {
     return CsvData;
     }
 
-    private ArrayList<Entry> DataValues1(ArrayList<String[]> csvData){
+    private ArrayList<Entry> DataValues(ArrayList<String[]> csvData){
         ArrayList<Entry> dataVals = new ArrayList<Entry>();
         for (int i = 0; i < csvData.size(); i++){
 
@@ -89,17 +82,6 @@ public class LoadCSV extends AppCompatActivity {
         }
 
             return dataVals;
-    }
-    private ArrayList<Entry> DataValues2(ArrayList<String[]> csvData){
-        ArrayList<Entry> dataVals = new ArrayList<Entry>();
-        for (int i = 0; i < csvData.size(); i++){
-
-            dataVals.add(new Entry(i,Integer.parseInt(csvData.get(i)[1])));
-
-
-        }
-
-        return dataVals;
     }
 
 }
